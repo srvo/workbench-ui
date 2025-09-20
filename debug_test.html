@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Frontend Issues</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .pass { background: #d4edda; }
+        .fail { background: #f8d7da; }
+        pre { background: #f8f9fa; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Frontend Debug Test</h1>
+    <div id="results"></div>
+
+    <script>
+        console.log('Debug test starting...');
+
+        async function debugFrontend() {
+            const results = document.getElementById('results');
+
+            function addResult(name, status, details) {
+                const div = document.createElement('div');
+                div.className = `test ${status}`;
+                div.innerHTML = `<strong>${name}</strong>: ${status.toUpperCase()}<br><small>${details}</small>`;
+                results.appendChild(div);
+                console.log(`${name}: ${status} - ${details}`);
+            }
+
+            // Test 1: Check if we can fetch from the main app
+            try {
+                const mainPageResponse = await fetch('/');
+                const mainPageText = await mainPageResponse.text();
+
+                if (mainPageText.includes('Vite + React + TS')) {
+                    addResult('Main page load', 'pass', 'Found React app HTML');
+                } else {
+                    addResult('Main page load', 'fail', 'React app HTML not found');
+                }
+
+                if (mainPageText.includes('index-Cl4tbFnI.js')) {
+                    addResult('JS bundle reference', 'pass', 'Latest bundle referenced');
+                } else {
+                    addResult('JS bundle reference', 'fail', 'Bundle reference not found or wrong version');
+                }
+            } catch (e) {
+                addResult('Main page load', 'fail', e.message);
+            }
+
+            // Test 2: Check if JS bundle loads
+            try {
+                const jsResponse = await fetch('/assets/index-Cl4tbFnI.js');
+                if (jsResponse.ok) {
+                    addResult('JS bundle load', 'pass', `Bundle loads (${jsResponse.status})`);
+                } else {
+                    addResult('JS bundle load', 'fail', `HTTP ${jsResponse.status}`);
+                }
+            } catch (e) {
+                addResult('JS bundle load', 'fail', e.message);
+            }
+
+            // Test 3: Test API calls directly from this context
+            try {
+                console.log('Testing investable ticks API...');
+                const response = await fetch('https://workbenchapi.ethicic.com/api/securities/tick/investable');
+                const data = await response.json();
+
+                if (data && data.length > 0) {
+                    addResult('API investable ticks', 'pass', `Got ${data.length} securities including ${data[0].symbol}`);
+                } else {
+                    addResult('API investable ticks', 'fail', 'No data returned');
+                }
+            } catch (e) {
+                addResult('API investable ticks', 'fail', e.message);
+            }
+
+            // Test 4: Test search API
+            try {
+                console.log('Testing search API...');
+                const response = await fetch('https://workbenchapi.ethicic.com/api/securities/?search=agm');
+                const data = await response.json();
+
+                if (data && data.length > 0 && data[0].symbol === 'AGM') {
+                    addResult('API search AGM', 'pass', `AGM found: ${data[0].name}`);
+                } else {
+                    addResult('API search AGM', 'fail', `Expected AGM, got: ${data[0]?.symbol || 'no results'}`);
+                }
+            } catch (e) {
+                addResult('API search AGM', 'fail', e.message);
+            }
+
+            // Test 5: Test response transformation
+            try {
+                console.log('Testing response transformation...');
+                const response = await fetch('https://workbenchapi.ethicic.com/api/securities/tick/investable');
+                const ticks = await response.json();
+
+                // Transform like the frontend does
+                const securities = ticks.slice(0, 3).map(tick => ({
+                    symbol: tick.symbol,
+                    name: tick.name,
+                    sector: tick.sector,
+                    industry: tick.sector,
+                    is_excluded: false,
+                    last_tick_at: tick.updated_at?.split('T')[0]
+                }));
+
+                addResult('Response transformation', 'pass',
+                    `Transformed ${securities.length} securities: ${securities.map(s => s.symbol).join(', ')}`);
+            } catch (e) {
+                addResult('Response transformation', 'fail', e.message);
+            }
+
+            // Test 6: Check for console errors
+            const originalError = console.error;
+            let errorCount = 0;
+            console.error = function(...args) {
+                errorCount++;
+                originalError.apply(console, args);
+            };
+
+            setTimeout(() => {
+                addResult('Console errors', errorCount === 0 ? 'pass' : 'fail',
+                    errorCount === 0 ? 'No console errors' : `${errorCount} console errors detected`);
+            }, 2000);
+
+            console.log('Debug tests completed!');
+        }
+
+        window.addEventListener('load', debugFrontend);
+    </script>
+</body>
+</html>

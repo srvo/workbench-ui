@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  workbench-ui:
+    build: .
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    depends_on:
+      - workbench-api
+
+  workbench-api:
+    build: ../workbench_api
+    ports:
+      - "8000:8000"
+    environment:
+      - FLASK_ENV=production
+    restart: unless-stopped
+    volumes:
+      - ../workbench_api:/app

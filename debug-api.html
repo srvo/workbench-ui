@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Debug</title>
+</head>
+<body>
+    <h1>API Debug Test</h1>
+    <div id="results"></div>
+
+    <script>
+        const results = document.getElementById('results');
+
+        function log(message) {
+            console.log(message);
+            results.innerHTML += '<p>' + message + '</p>';
+        }
+
+        async function testAPI() {
+            log('Starting API tests...');
+
+            // Test 1: Check what API URL would be used
+            const apiBaseUrl = 'https://workbenchapi.ethicic.com';
+            log('Using API Base URL: ' + apiBaseUrl);
+
+            // Test 2: Simple fetch test
+            try {
+                log('Testing fetch to /health...');
+                const healthResponse = await fetch(apiBaseUrl + '/health');
+                log('Health response status: ' + healthResponse.status);
+                const healthData = await healthResponse.json();
+                log('Health response data: ' + JSON.stringify(healthData));
+            } catch (error) {
+                log('Health fetch error: ' + error.message);
+            }
+
+            // Test 3: Securities API test
+            try {
+                log('Testing fetch to /api/securities/...');
+                const securitiesResponse = await fetch(apiBaseUrl + '/api/securities/?limit=3');
+                log('Securities response status: ' + securitiesResponse.status);
+                const securitiesData = await securitiesResponse.json();
+                log('Securities response length: ' + securitiesData.length);
+                log('First security: ' + JSON.stringify(securitiesData[0]));
+            } catch (error) {
+                log('Securities fetch error: ' + error.message);
+            }
+
+            // Test 4: Check CORS headers
+            try {
+                log('Testing CORS preflight...');
+                const corsResponse = await fetch(apiBaseUrl + '/api/securities/?limit=1', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                log('CORS test status: ' + corsResponse.status);
+                log('CORS headers: ' + JSON.stringify([...corsResponse.headers.entries()]));
+            } catch (error) {
+                log('CORS test error: ' + error.message);
+            }
+        }
+
+        testAPI();
+    </script>
+</body>
+</html>
