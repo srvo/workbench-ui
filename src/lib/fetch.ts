@@ -10,7 +10,7 @@ export const apiClient = axios.create({
     'Content-Type': 'application/json',
   },
   withCredentials: false, // Cloudflare Access handles auth
-  maxRedirects: 5, // Allow redirects
+  maxRedirects: 0, // Don't follow redirects automatically to prevent HTTPS->HTTP downgrade
   timeout: 30000, // 30 second timeout
   validateStatus: (status) => status < 500, // Don't reject on 4xx errors
 });
@@ -26,7 +26,24 @@ apiClient.interceptors.request.use((config) => {
 
 // Error response interceptor
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Handle redirects manually to ensure HTTPS
+    if (response.status === 301 || response.status === 302 || response.status === 307 || response.status === 308) {
+      let location = response.headers.location;
+      if (location && location.startsWith('http://')) {
+        // Force HTTPS for redirected location
+        location = location.replace('http://', 'https://');
+      }
+      if (location) {
+        // Make a new request to the redirect location with HTTPS
+        const config = { ...response.config };
+        config.url = location;
+        config.baseURL = undefined; // Clear baseURL since we have a full URL
+        return apiClient.request(config);
+      }
+    }
+    return response;
+  },
   (error: AxiosError) => {
     // Map common errors
     if (error.response) {
@@ -59,15 +76,24 @@ apiClient.interceptors.response.use(
 
 // Helper functions for common requests
 export const fetcher = {
-  get: <T = any>(url: string, params?: any) =>
-    apiClient.get<T>(url, { params }).then(res => res.data),
+  get: <T = any>(url: string, params?: any) => {
+    // Remove trailing slashes to avoid redirect issues
+    const cleanUrl = url.endsWith('/') && url.length > 1 ? url.slice(0, -1) : url;
+    return apiClient.get<T>(cleanUrl, { params }).then(res => res.data);
+  },
 
-  post: <T = any>(url: string, data?: any) =>
-    apiClient.post<T>(url, data).then(res => res.data),
+  post: <T = any>(url: string, data?: any) => {
+    const cleanUrl = url.endsWith('/') && url.length > 1 ? url.slice(0, -1) : url;
+    return apiClient.post<T>(cleanUrl, data).then(res => res.data);
+  },
 
-  put: <T = any>(url: string, data?: any) =>
-    apiClient.put<T>(url, data).then(res => res.data),
+  put: <T = any>(url: string, data?: any) => {
+    const cleanUrl = url.endsWith('/') && url.length > 1 ? url.slice(0, -1) : url;
+    return apiClient.put<T>(cleanUrl, data).then(res => res.data);
+  },
 
-  delete: <T = any>(url: string) =>
-    apiClient.delete<T>(url).then(res => res.data),
+  delete: <T = any>(url: string) => {
+    const cleanUrl = url.endsWith('/') && url.length > 1 ? url.slice(0, -1) : url;
+    return apiClient.delete<T>(cleanUrl).then(res => res.data);
+  },
 };

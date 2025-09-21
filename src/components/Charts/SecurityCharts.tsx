@@ -75,23 +75,28 @@ const SecurityCharts: React.FC<SecurityChartsProps> = ({ symbol }) => {
 
   // Sort tick history by timestamp for proper temporal order
   const sortedTickHistory = useMemo(() => {
-    if (!tickHistory?.t || !tickHistory?.v) return null;
+    if (!tickHistory?.t || !tickHistory?.v || tickHistory.t.length === 0) return null;
 
-    // Create array of timestamp-value pairs
-    const pairs = tickHistory.t.map((timestamp, index) => ({
-      timestamp,
-      value: tickHistory.v[index],
-      date: new Date(timestamp * 1000).toISOString().split('T')[0]
-    }));
+    try {
+      // Create array of timestamp-value pairs
+      const pairs = tickHistory.t.map((timestamp, index) => ({
+        timestamp,
+        value: tickHistory.v[index],
+        date: new Date(timestamp * 1000).toISOString().split('T')[0]
+      }));
 
-    // Sort by timestamp
-    pairs.sort((a, b) => a.timestamp - b.timestamp);
+      // Sort by timestamp
+      pairs.sort((a, b) => a.timestamp - b.timestamp);
 
-    return {
-      t: pairs.map(p => p.timestamp),
-      v: pairs.map(p => p.value),
-      dates: pairs.map(p => p.date)
-    };
+      return {
+        t: pairs.map(p => p.timestamp),
+        v: pairs.map(p => p.value),
+        dates: pairs.map(p => p.date)
+      };
+    } catch (error) {
+      console.error('Error sorting tick history:', error);
+      return null;
+    }
   }, [tickHistory]);
 
   const tickDates = sortedTickHistory?.dates || [];
