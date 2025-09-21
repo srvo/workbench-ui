@@ -259,6 +259,53 @@ export const handlers = [
     });
   }),
 
+  // Regular exclusions API endpoints for integration tests
+  http.get(`${API_BASE}/api/exclusions/`, ({ request }) => {
+    const url = new URL(request.url);
+    const isActive = url.searchParams.get('is_active');
+    const limit = url.searchParams.get('limit');
+
+    return HttpResponse.json([
+      {
+        id: 1,
+        symbol: 'AAPL',
+        category_name: 'Technology Concerns',
+        category_color: '#FF6B6B',
+        category_priority: 1,
+        reason: 'Data privacy issues',
+        excluded_at: '2023-01-01T10:00:00Z',
+        excluded_by: 'test_user',
+        is_active: 1,
+        source: 'manual',
+        metadata: {}
+      },
+      {
+        id: 2,
+        symbol: 'TSLA',
+        category_name: 'Environmental Concerns',
+        category_color: '#FFA500',
+        category_priority: 2,
+        reason: 'Manufacturing practices',
+        excluded_at: '2023-01-02T10:00:00Z',
+        excluded_by: 'test_user',
+        is_active: 1,
+        source: 'manual',
+        metadata: {}
+      }
+    ]);
+  }),
+
+  http.get(`${API_BASE}/api/exclusions/categories`, () => {
+    return HttpResponse.json([
+      {
+        id: 1,
+        name: 'Technology Concerns',
+        color: '#FF6B6B',
+        priority: 100
+      }
+    ]);
+  }),
+
   // Health check
   http.get(`${API_BASE}/health`, () => {
     return HttpResponse.json({ status: 'ok' });
