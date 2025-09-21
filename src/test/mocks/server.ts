@@ -180,20 +180,23 @@ export const handlers = [
   }),
 
   http.get(`${API_BASE}/api/exclusions/workbench/categories`, () => {
-    return HttpResponse.json([
-      {
-        category: 'Animal Rights',
-        companies: 850,
-        exclusions: 1200,
-        sources: 3
-      },
-      {
-        category: 'Environmental Damage',
-        companies: 650,
-        exclusions: 900,
-        sources: 4
-      }
-    ]);
+    return HttpResponse.json({
+      categories: [
+        {
+          category: 'Animal Rights',
+          companies: 850,
+          exclusions: 1200,
+          sources: 3
+        },
+        {
+          category: 'Environmental Damage',
+          companies: 650,
+          exclusions: 900,
+          sources: 4
+        }
+      ],
+      overlaps: []
+    });
   }),
 
   http.get(`${API_BASE}/api/exclusions/workbench/source-mappings`, () => {
