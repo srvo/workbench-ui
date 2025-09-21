@@ -9,7 +9,7 @@ interface LatestNoteProps {
 }
 
 const LatestNote: React.FC<LatestNoteProps> = ({ symbol }) => {
-  const { data: note, isLoading } = useQuery({
+  const { data: note, isLoading, error } = useQuery({
     queryKey: ['notes', symbol, 'latest'],
     queryFn: () => notesApi.getLatest(symbol),
     enabled: !!symbol,
@@ -17,6 +17,11 @@ const LatestNote: React.FC<LatestNoteProps> = ({ symbol }) => {
 
   if (isLoading) {
     return <div className="text-sm text-gray-500">Loading note...</div>;
+  }
+
+  if (error) {
+    console.error('Error loading note:', error);
+    return <div className="text-sm text-red-500">Error loading note</div>;
   }
 
   if (!note || !note.body_md) {

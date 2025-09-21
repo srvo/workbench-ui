@@ -70,9 +70,31 @@ const SecurityCharts: React.FC<SecurityChartsProps> = ({ symbol }) => {
     );
   }
 
-  // Convert timestamp to dates
+  // Convert timestamp to dates and ensure temporal sorting
   const dates = chartData.ohlc?.t?.map(t => new Date(t * 1000).toISOString().split('T')[0]) || [];
-  const tickDates = tickHistory?.t?.map(t => new Date(t * 1000).toISOString().split('T')[0]) || [];
+
+  // Sort tick history by timestamp for proper temporal order
+  const sortedTickHistory = useMemo(() => {
+    if (!tickHistory?.t || !tickHistory?.v) return null;
+
+    // Create array of timestamp-value pairs
+    const pairs = tickHistory.t.map((timestamp, index) => ({
+      timestamp,
+      value: tickHistory.v[index],
+      date: new Date(timestamp * 1000).toISOString().split('T')[0]
+    }));
+
+    // Sort by timestamp
+    pairs.sort((a, b) => a.timestamp - b.timestamp);
+
+    return {
+      t: pairs.map(p => p.timestamp),
+      v: pairs.map(p => p.value),
+      dates: pairs.map(p => p.date)
+    };
+  }, [tickHistory]);
+
+  const tickDates = sortedTickHistory?.dates || [];
 
   return (
     <div className="grid grid-cols-1 gap-4">
@@ -100,20 +122,22 @@ const SecurityCharts: React.FC<SecurityChartsProps> = ({ symbol }) => {
               name: 'SMA 200',
               line: { color: '#581c87', width: 2 },
             }] : []),
-            ...(tickHistory?.v ? [{
+            ...(sortedTickHistory?.v && sortedTickHistory.v.length > 0 ? [{
               type: 'scatter' as const,
               mode: 'lines+markers' as const,
               x: tickDates,
-              y: tickHistory.v,
+              y: sortedTickHistory.v,
               name: 'Tick Score',
               yaxis: 'y2',
               line: { color: '#14b8a6', width: 2 },
-              marker: currentTick?.score ? {
-                size: [
-                  ...new Array(tickDates.length - 1).fill(4),
-                  10 // Highlight latest
-                ]
-              } : { size: 4 },
+              marker: {
+                size: sortedTickHistory.v.map((_, index) =>
+                  index === sortedTickHistory.v.length - 1 ? 10 : 4
+                ),
+                color: sortedTickHistory.v.map(value =>
+                  value === 0 ? '#ef4444' : '#14b8a6'
+                )
+              },
             }] : []),
           ]}
           layout={{
@@ -124,10 +148,13 @@ const SecurityCharts: React.FC<SecurityChartsProps> = ({ symbol }) => {
               title: 'Tick Score',
               overlaying: 'y',
               side: 'right',
-              range: tickHistory?.v && tickHistory.v.length > 0 ? [
-                Math.min(...tickHistory.v) - 10,
-                Math.max(...tickHistory.v) + 10
+              range: sortedTickHistory?.v && sortedTickHistory.v.length > 0 ? [
+                Math.min(Math.min(...sortedTickHistory.v) - 10, -100),
+                Math.max(Math.max(...sortedTickHistory.v) + 10, 100)
               ] : [-100, 100],
+              zeroline: true,
+              zerolinecolor: '#d1d5db',
+              zerolinewidth: 1,
             },
           }}
           onRelayout={handleRelayout}
