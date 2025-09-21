@@ -6,14 +6,16 @@ import SourceMappingsPanel from '../components/Exclusions/SourceMappingsPanel';
 import DataQualityPanel from '../components/Exclusions/DataQualityPanel';
 import SharadarCoveragePanel from '../components/Exclusions/SharadarCoveragePanel';
 import IngestionLogsPanel from '../components/Exclusions/IngestionLogsPanel';
+import ExclusionsManagement from '../components/Exclusions/ExclusionsManagement';
 
-type TabType = 'dashboard' | 'categories' | 'mappings' | 'quality' | 'coverage' | 'logs';
+type TabType = 'dashboard' | 'manage' | 'categories' | 'mappings' | 'quality' | 'coverage' | 'logs';
 
 const Exclusions: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
 
   const tabs = [
     { id: 'dashboard', label: '📊 Dashboard', icon: '📊' },
+    { id: 'manage', label: '⚙️ Manage Exclusions', icon: '⚙️' },
     { id: 'categories', label: '🏷️  Categories', icon: '🏷️' },
     { id: 'mappings', label: '🔗 Source Mappings', icon: '🔗' },
     { id: 'quality', label: '🔍 Data Quality', icon: '🔍' },
@@ -25,6 +27,8 @@ const Exclusions: React.FC = () => {
     switch (activeTab) {
       case 'dashboard':
         return <ExclusionsDashboard />;
+      case 'manage':
+        return <ExclusionsManagement />;
       case 'categories':
         return <CategoriesPanel />;
       case 'mappings':

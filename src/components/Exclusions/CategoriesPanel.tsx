@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { exclusionsWorkbenchApi } from '../../api/exclusionsWorkbench';
+import CategoryGuidanceEditor from './CategoryGuidanceEditor';
 
 const CategoriesPanel: React.FC = () => {
+  const [editingCategory, setEditingCategory] = useState<string | null>(null);
+
   const { data, isLoading, error } = useQuery({
     queryKey: ['exclusions-categories'],
     queryFn: exclusionsWorkbenchApi.getCategories
@@ -49,6 +52,9 @@ const CategoriesPanel: React.FC = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Sources
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -65,6 +71,14 @@ const CategoriesPanel: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">
                     {category.sources}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <button
+                      onClick={() => setEditingCategory(category.category)}
+                      className="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors"
+                    >
+                      🤖 AI Guidance
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -124,6 +138,14 @@ const CategoriesPanel: React.FC = () => {
             <p className="text-gray-600">All companies are in single categories</p>
           </div>
         </div>
+      )}
+
+      {/* AI Guidance Editor Modal */}
+      {editingCategory && (
+        <CategoryGuidanceEditor
+          category={editingCategory}
+          onClose={() => setEditingCategory(null)}
+        />
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://workbenchapi.ethicic.com';
 
 export interface ExclusionsStats {
   companies: number;
@@ -18,6 +18,11 @@ export interface CategoryData {
   companies: number;
   exclusions: number;
   sources: number;
+  description?: string;
+  ai_guidance?: string;
+  keywords?: string[];
+  examples?: string;
+  policy_link?: string;
 }
 
 export interface CategoryOverlap {
@@ -146,5 +151,22 @@ export const exclusionsWorkbenchApi = {
   getIngestionLogs: (limit?: number): Promise<IngestionLogsResponse> => {
     const endpoint = limit !== undefined ? `/ingestion-logs?limit=${limit}` : '/ingestion-logs';
     return fetchFromAPI(endpoint);
+  },
+
+  getCategoryGuidance: (category: string): Promise<CategoryData> =>
+    fetchFromAPI(`/categories/${encodeURIComponent(category)}/guidance`),
+
+  updateCategoryGuidance: async (category: string, guidance: Partial<CategoryData>): Promise<void> => {
+    const response = await fetch(`${API_BASE}/api/exclusions/workbench/categories/${encodeURIComponent(category)}/guidance`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(guidance),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
   },
 };

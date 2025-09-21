@@ -1,29 +1,20 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { securitiesApi } from '../../api/securities';
 import { apiClient } from '../../lib/fetch';
 import { server } from '../../test/mocks/server';
-import { bypass, http } from 'msw';
 
-describe.skip('API Integration Tests (network access issues in test env)', () => {
+describe.skip('API Integration Tests (requires Node.js environment for external HTTP calls)', () => {
   beforeAll(() => {
     console.log('API Base URL:', import.meta.env.VITE_API_BASE_URL);
     console.log('API Client Base URL:', apiClient.defaults.baseURL);
 
-    // Use real API instead of mocks for integration tests
-    server.use(
-      http.get('https://workbenchapi.ethicic.com/*', ({ request }) => {
-        return fetch(bypass(request));
-      }),
-      http.post('https://workbenchapi.ethicic.com/*', ({ request }) => {
-        return fetch(bypass(request));
-      }),
-      http.put('https://workbenchapi.ethicic.com/*', ({ request }) => {
-        return fetch(bypass(request));
-      }),
-      http.delete('https://workbenchapi.ethicic.com/*', ({ request }) => {
-        return fetch(bypass(request));
-      })
-    );
+    // Stop MSW server to allow real network requests
+    server.close();
+  });
+
+  afterAll(() => {
+    // Restart MSW server for other tests
+    server.listen();
   });
 
   describe('Environment Configuration', () => {
@@ -38,11 +29,14 @@ describe.skip('API Integration Tests (network access issues in test env)', () =>
     });
   });
 
-  describe('API Health Check', () => {
-    it('should connect to API health endpoint', async () => {
-      const response = await apiClient.get('/health');
+  describe('API Connectivity Check', () => {
+    it('should connect to exclusions workbench stats', async () => {
+      const response = await apiClient.get('/api/exclusions/workbench/stats');
       expect(response.status).toBe(200);
-      expect(response.data).toHaveProperty('status', 'ok');
+      expect(response.data).toHaveProperty('companies');
+      expect(response.data).toHaveProperty('exclusions');
+      expect(response.data).toHaveProperty('sources');
+      expect(response.data).toHaveProperty('categories');
     }, 10000);
   });
 
