@@ -169,6 +169,93 @@ export const handlers = [
     });
   }),
 
+  // Exclusions workbench endpoints
+  http.get(`${API_BASE}/api/exclusions/workbench/stats`, () => {
+    return HttpResponse.json({
+      companies: 2500,
+      exclusions: 3200,
+      sources: 12,
+      categories: 8
+    });
+  }),
+
+  http.get(`${API_BASE}/api/exclusions/workbench/categories`, () => {
+    return HttpResponse.json([
+      {
+        category: 'Animal Rights',
+        companies: 850,
+        exclusions: 1200,
+        sources: 3
+      },
+      {
+        category: 'Environmental Damage',
+        companies: 650,
+        exclusions: 900,
+        sources: 4
+      }
+    ]);
+  }),
+
+  http.get(`${API_BASE}/api/exclusions/workbench/source-mappings`, () => {
+    return HttpResponse.json([
+      {
+        source: 'AFSC',
+        total_exclusions: 1500,
+        categories: { 'Human Rights Violations': 800, 'Environmental Damage': 700 }
+      }
+    ]);
+  }),
+
+  http.get(`${API_BASE}/api/exclusions/workbench/data-quality`, () => {
+    return HttpResponse.json({
+      total_companies: 2500,
+      companies_with_tickers: 2100,
+      companies_missing_tickers: 400,
+      ticker_coverage: 84.0
+    });
+  }),
+
+  http.get(`${API_BASE}/api/exclusions/workbench/sharadar-coverage`, () => {
+    return HttpResponse.json({
+      total_exclusions: 3200,
+      sharadar_matches: 1800,
+      coverage_percentage: 56.25
+    });
+  }),
+
+  http.get(`${API_BASE}/api/exclusions/workbench/ingestion-logs`, () => {
+    return HttpResponse.json([
+      {
+        id: 1,
+        source: 'AFSC',
+        status: 'success',
+        companies_processed: 500,
+        exclusions_created: 750,
+        timestamp: '2025-09-20T10:00:00Z'
+      }
+    ]);
+  }),
+
+  http.get(`${API_BASE}/api/exclusions/workbench/categories/:category/guidance`, ({ params }) => {
+    return HttpResponse.json({
+      category: params.category,
+      description: `Description for ${params.category}`,
+      ai_guidance: `AI guidance for ${params.category}`,
+      keywords: [`keyword1`, `keyword2`],
+      examples: `Example companies for ${params.category}`,
+      policy_link: 'https://ethicic.com/content/process/screening-policy'
+    });
+  }),
+
+  http.put(`${API_BASE}/api/exclusions/workbench/categories/:category/guidance`, async ({ params, request }) => {
+    const body = await request.json();
+    return HttpResponse.json({
+      category: params.category,
+      ...body,
+      updated_at: new Date().toISOString()
+    });
+  }),
+
   // Health check
   http.get(`${API_BASE}/health`, () => {
     return HttpResponse.json({ status: 'ok' });
