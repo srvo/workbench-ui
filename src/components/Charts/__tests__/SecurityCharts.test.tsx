@@ -90,12 +90,12 @@ describe('SecurityCharts', () => {
 
     // Wait for data to load and charts to render
     await waitFor(() => {
-      const charts = screen.getAllByTestId('plotly-chart');
-      expect(charts.length).toBeGreaterThan(0);
-    });
+      expect(screen.getByText('Price & Tick Score')).toBeInTheDocument();
+    }, { timeout: 2000 });
 
     // Verify the charts rendered correctly
-    expect(screen.getByText('Price & Tick Score')).toBeInTheDocument();
+    const charts = screen.getAllByTestId('plotly-chart');
+    expect(charts.length).toBeGreaterThan(0);
   });
 
   it('renders price chart with OHLC data', async () => {
@@ -107,61 +107,69 @@ describe('SecurityCharts', () => {
     renderWithQuery(<SecurityCharts symbol="AAPL" />);
 
     await waitFor(() => {
-      const charts = screen.getAllByTestId('plotly-chart');
-      expect(charts.length).toBeGreaterThan(0);
-
-      const priceChart = charts[0];
-      const chartData = JSON.parse(priceChart.querySelector('[data-testid="chart-data"]')!.textContent!);
-
-      expect(chartData).toContainEqual(
-        expect.objectContaining({
-          type: 'candlestick',
-          name: 'Price'
-        })
-      );
+      expect(screen.getByText('Price & Tick Score')).toBeInTheDocument();
     });
+
+    const charts = screen.getAllByTestId('plotly-chart');
+    expect(charts.length).toBeGreaterThan(0);
+
+    const priceChart = charts[0];
+    const chartData = JSON.parse(priceChart.querySelector('[data-testid="chart-data"]')!.textContent!);
+
+    expect(chartData).toContainEqual(
+      expect.objectContaining({
+        type: 'candlestick',
+        name: 'Price'
+      })
+    );
   });
 
   it('includes SMA200 line when available', async () => {
     vi.mocked(securitiesApi.getChart).mockResolvedValue(mockChartData);
     vi.mocked(securitiesApi.getTickHistory).mockResolvedValue(mockTickHistory);
+    vi.mocked(securitiesApi.getFundamentals).mockResolvedValue(null);
     vi.mocked(tickApi.get).mockResolvedValue({ score: 82 });
 
     renderWithQuery(<SecurityCharts symbol="AAPL" />);
 
     await waitFor(() => {
-      const charts = screen.getAllByTestId('plotly-chart');
-      const priceChart = charts[0];
-      const chartData = JSON.parse(priceChart.querySelector('[data-testid="chart-data"]')!.textContent!);
-
-      expect(chartData).toContainEqual(
-        expect.objectContaining({
-          type: 'scatter',
-          name: 'SMA 200'
-        })
-      );
+      expect(screen.getByText('Price & Tick Score')).toBeInTheDocument();
     });
+
+    const charts = screen.getAllByTestId('plotly-chart');
+    const priceChart = charts[0];
+    const chartData = JSON.parse(priceChart.querySelector('[data-testid="chart-data"]')!.textContent!);
+
+    expect(chartData).toContainEqual(
+      expect.objectContaining({
+        type: 'scatter',
+        name: 'SMA 200'
+      })
+    );
   });
 
   it('renders tick score overlay on price chart', async () => {
     vi.mocked(securitiesApi.getChart).mockResolvedValue(mockChartData);
     vi.mocked(securitiesApi.getTickHistory).mockResolvedValue(mockTickHistory);
+    vi.mocked(securitiesApi.getFundamentals).mockResolvedValue(null);
     vi.mocked(tickApi.get).mockResolvedValue({ score: 82 });
 
     renderWithQuery(<SecurityCharts symbol="AAPL" />);
 
     await waitFor(() => {
-      const charts = screen.getAllByTestId('plotly-chart');
-      const priceChart = charts[0];
-      const chartData = JSON.parse(priceChart.querySelector('[data-testid="chart-data"]')!.textContent!);
-
-      expect(chartData).toContainEqual(
-        expect.objectContaining({
-          name: 'Tick Score',
-          yaxis: 'y2'
-        })
-      );
+      expect(screen.getByText('Price & Tick Score')).toBeInTheDocument();
     });
+
+    const charts = screen.getAllByTestId('plotly-chart');
+    const priceChart = charts[0];
+    const chartData = JSON.parse(priceChart.querySelector('[data-testid="chart-data"]')!.textContent!);
+
+    expect(chartData).toContainEqual(
+      expect.objectContaining({
+        name: 'Tick Score',
+        yaxis: 'y2'
+      })
+    );
   });
 
   it('renders fundamentals charts when data is available', async () => {
@@ -197,54 +205,65 @@ describe('SecurityCharts', () => {
   it('highlights current tick score in history', async () => {
     vi.mocked(securitiesApi.getChart).mockResolvedValue(mockChartData);
     vi.mocked(securitiesApi.getTickHistory).mockResolvedValue(mockTickHistory);
+    vi.mocked(securitiesApi.getFundamentals).mockResolvedValue(null);
     vi.mocked(tickApi.get).mockResolvedValue({ score: 82 });
 
     renderWithQuery(<SecurityCharts symbol="AAPL" />);
 
     await waitFor(() => {
-      const charts = screen.getAllByTestId('plotly-chart');
-      const priceChart = charts[0];
-      const chartData = JSON.parse(priceChart.querySelector('[data-testid="chart-data"]')!.textContent!);
-
-      const tickScoreLine = chartData.find((trace: any) => trace.name === 'Tick Score');
-      expect(tickScoreLine.marker.size).toEqual([4, 4, 10]); // Latest highlighted
+      expect(screen.getByText('Price & Tick Score')).toBeInTheDocument();
     });
+
+    const charts = screen.getAllByTestId('plotly-chart');
+    const priceChart = charts[0];
+    const chartData = JSON.parse(priceChart.querySelector('[data-testid="chart-data"]')!.textContent!);
+
+    const tickScoreLine = chartData.find((trace: any) => trace.name === 'Tick Score');
+    expect(tickScoreLine.marker.size).toEqual([4, 4, 10]); // Latest highlighted
   });
 
   it('converts timestamps to dates correctly', async () => {
     vi.mocked(securitiesApi.getChart).mockResolvedValue(mockChartData);
     vi.mocked(securitiesApi.getTickHistory).mockResolvedValue(mockTickHistory);
+    vi.mocked(securitiesApi.getFundamentals).mockResolvedValue(null);
+    vi.mocked(tickApi.get).mockResolvedValue({ score: 82 });
 
     renderWithQuery(<SecurityCharts symbol="AAPL" />);
 
     await waitFor(() => {
-      const charts = screen.getAllByTestId('plotly-chart');
-      const priceChart = charts[0];
-      const chartData = JSON.parse(priceChart.querySelector('[data-testid="chart-data"]')!.textContent!);
-
-      const candlestickTrace = chartData.find((trace: any) => trace.type === 'candlestick');
-      expect(candlestickTrace.x).toEqual(['2023-09-18', '2023-09-19', '2023-09-20']);
+      expect(screen.getByText('Price & Tick Score')).toBeInTheDocument();
     });
+
+    const charts = screen.getAllByTestId('plotly-chart');
+    const priceChart = charts[0];
+    const chartData = JSON.parse(priceChart.querySelector('[data-testid="chart-data"]')!.textContent!);
+
+    const candlestickTrace = chartData.find((trace: any) => trace.type === 'candlestick');
+    expect(candlestickTrace.x).toEqual(['2023-09-18', '2023-09-19', '2023-09-20']);
   });
 
   it('handles chart relayout for x-axis synchronization', async () => {
     vi.mocked(securitiesApi.getChart).mockResolvedValue(mockChartData);
     vi.mocked(securitiesApi.getTickHistory).mockResolvedValue(mockTickHistory);
     vi.mocked(securitiesApi.getFundamentals).mockResolvedValue(mockFundamentals);
+    vi.mocked(tickApi.get).mockResolvedValue({ score: 82 });
 
     renderWithQuery(<SecurityCharts symbol="AAPL" />);
 
     await waitFor(() => {
-      const charts = screen.getAllByTestId('plotly-chart');
-      expect(charts.length).toBeGreaterThan(1);
+      expect(screen.getByText('Price & Tick Score')).toBeInTheDocument();
+      expect(screen.getByText('Valuations')).toBeInTheDocument();
+    });
 
-      // All charts should have the same common layout structure
-      charts.forEach(chart => {
-        const layout = JSON.parse(chart.querySelector('[data-testid="chart-layout"]')!.textContent!);
-        expect(layout).toHaveProperty('autosize', true);
-        expect(layout).toHaveProperty('margin');
-        expect(layout).toHaveProperty('font');
-      });
+    const charts = screen.getAllByTestId('plotly-chart');
+    expect(charts.length).toBeGreaterThan(1);
+
+    // All charts should have the same common layout structure
+    charts.forEach(chart => {
+      const layout = JSON.parse(chart.querySelector('[data-testid="chart-layout"]')!.textContent!);
+      expect(layout).toHaveProperty('autosize', true);
+      expect(layout).toHaveProperty('margin');
+      expect(layout).toHaveProperty('font');
     });
   });
 });
