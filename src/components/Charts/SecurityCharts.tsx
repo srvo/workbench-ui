@@ -62,17 +62,17 @@ const SecurityCharts: React.FC<SecurityChartsProps> = ({ symbol }) => {
     );
   }
 
-  if (!chartData) {
+  if (!chartData || Array.isArray(chartData) && chartData.length === 0 || !chartData.ohlc) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500">
-        Loading charts...
+        No chart data available
       </div>
     );
   }
 
   // Convert timestamp to dates
-  const dates = chartData.ohlc.t.map(t => new Date(t * 1000).toISOString().split('T')[0]);
-  const tickDates = tickHistory?.t.map(t => new Date(t * 1000).toISOString().split('T')[0]) || [];
+  const dates = chartData.ohlc?.t?.map(t => new Date(t * 1000).toISOString().split('T')[0]) || [];
+  const tickDates = tickHistory?.t?.map(t => new Date(t * 1000).toISOString().split('T')[0]) || [];
 
   return (
     <div className="grid grid-cols-1 gap-4">
@@ -100,7 +100,7 @@ const SecurityCharts: React.FC<SecurityChartsProps> = ({ symbol }) => {
               name: 'SMA 200',
               line: { color: '#581c87', width: 2 },
             }] : []),
-            ...(tickHistory ? [{
+            ...(tickHistory?.v ? [{
               type: 'scatter' as const,
               mode: 'lines+markers' as const,
               x: tickDates,
@@ -124,7 +124,7 @@ const SecurityCharts: React.FC<SecurityChartsProps> = ({ symbol }) => {
               title: 'Tick Score',
               overlaying: 'y',
               side: 'right',
-              range: tickHistory ? [
+              range: tickHistory?.v && tickHistory.v.length > 0 ? [
                 Math.min(...tickHistory.v) - 10,
                 Math.max(...tickHistory.v) + 10
               ] : [-100, 100],
@@ -144,10 +144,10 @@ const SecurityCharts: React.FC<SecurityChartsProps> = ({ symbol }) => {
               ...['pb', 'ps', 'ptbv', 'pe'].map(metric => ({
                 type: 'scatter' as const,
                 mode: 'lines' as const,
-                x: fundamentals.series[metric]?.t.map(t =>
+                x: fundamentals.series?.[metric]?.t?.map(t =>
                   new Date(t * 1000).toISOString().split('T')[0]
                 ) || [],
-                y: fundamentals.series[metric]?.v || [],
+                y: fundamentals.series?.[metric]?.v || [],
                 name: metric.toUpperCase(),
               })),
             ]}
@@ -172,10 +172,10 @@ const SecurityCharts: React.FC<SecurityChartsProps> = ({ symbol }) => {
               ...['shy', 'fcf_yield'].map(metric => ({
                 type: 'scatter' as const,
                 mode: 'lines' as const,
-                x: fundamentals.series[metric]?.t.map(t =>
+                x: fundamentals.series?.[metric]?.t?.map(t =>
                   new Date(t * 1000).toISOString().split('T')[0]
                 ) || [],
-                y: fundamentals.series[metric]?.v || [],
+                y: fundamentals.series?.[metric]?.v || [],
                 name: metric === 'shy' ? 'Shareholder Yield' : 'FCF Yield',
               })),
             ]}
@@ -200,10 +200,10 @@ const SecurityCharts: React.FC<SecurityChartsProps> = ({ symbol }) => {
               ...['rev_cagr_5y', 'fcf_cagr_5y', 'rev_yoy', 'cor_yoy'].map(metric => ({
                 type: 'scatter' as const,
                 mode: 'lines' as const,
-                x: fundamentals.series[metric]?.t.map(t =>
+                x: fundamentals.series?.[metric]?.t?.map(t =>
                   new Date(t * 1000).toISOString().split('T')[0]
                 ) || [],
-                y: fundamentals.series[metric]?.v || [],
+                y: fundamentals.series?.[metric]?.v || [],
                 name: metric.includes('cagr') ? `${metric.split('_')[0].toUpperCase()} CAGR 5Y` :
                       `${metric.split('_')[0].toUpperCase()} YoY`,
               })),

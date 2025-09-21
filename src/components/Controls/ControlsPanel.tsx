@@ -3,6 +3,9 @@ import TickScore from './TickScore';
 import LatestNote from './LatestNote';
 import MarkdownEditor from './MarkdownEditor';
 import NotesDrawer from './NotesDrawer';
+import StrategyAssignment from './StrategyAssignment';
+import ExclusionControls from './ExclusionControls';
+import PortfolioControls from './PortfolioControls';
 import { useToast } from '../../hooks/useToast';
 
 interface ControlsPanelProps {
@@ -41,6 +44,24 @@ const ControlsPanel: React.FC<ControlsPanelProps> = ({
       <div className="p-6 border-b border-gray-200">
         <h2 className="text-sm font-medium text-gray-700 mb-3">Tick Score</h2>
         <TickScore symbol={symbol} />
+      </div>
+
+      {/* Strategy Assignment Section */}
+      <div className="p-6 border-b border-gray-200">
+        <h2 className="text-sm font-medium text-gray-700 mb-3">Strategy Assignment</h2>
+        <StrategyAssignment symbol={symbol} />
+      </div>
+
+      {/* Exclusion Controls Section */}
+      <div className="p-6 border-b border-gray-200">
+        <h2 className="text-sm font-medium text-gray-700 mb-3">Exclusion Controls</h2>
+        <ExclusionControls symbol={symbol} />
+      </div>
+
+      {/* Portfolio Management Section */}
+      <div className="p-6 border-b border-gray-200">
+        <h2 className="text-sm font-medium text-gray-700 mb-3">Portfolio Management</h2>
+        <PortfolioControls symbol={symbol} />
       </div>
 
       {/* Latest Note Section */}

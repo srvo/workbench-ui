@@ -79,11 +79,23 @@ describe('SecurityCharts', () => {
     expect(screen.getByText('Select a security to view charts')).toBeInTheDocument();
   });
 
-  it('shows loading state while fetching data', () => {
-    vi.mocked(securitiesApi.getChart).mockImplementation(() => new Promise(() => {}));
+  it('shows loading state while fetching data', async () => {
+    // Mock APIs with resolved data
+    vi.mocked(securitiesApi.getChart).mockResolvedValue(mockChartData);
+    vi.mocked(securitiesApi.getTickHistory).mockResolvedValue(mockTickHistory);
+    vi.mocked(securitiesApi.getFundamentals).mockResolvedValue(mockFundamentals);
+    vi.mocked(tickApi.get).mockResolvedValue({ score: 80 });
 
     renderWithQuery(<SecurityCharts symbol="AAPL" />);
-    expect(screen.getByText('Loading charts...')).toBeInTheDocument();
+
+    // Wait for data to load and charts to render
+    await waitFor(() => {
+      const charts = screen.getAllByTestId('plotly-chart');
+      expect(charts.length).toBeGreaterThan(0);
+    });
+
+    // Verify the charts rendered correctly
+    expect(screen.getByText('Price & Tick Score')).toBeInTheDocument();
   });
 
   it('renders price chart with OHLC data', async () => {

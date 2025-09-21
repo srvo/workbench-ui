@@ -16,20 +16,31 @@ interface LogEntry {
 }
 
 const ExclusionsDashboard: React.FC = () => {
-  const { data: stats, isLoading: statsLoading } = useQuery({
+  const { data: stats, isLoading: statsLoading, error: statsError } = useQuery({
     queryKey: ['exclusions-stats'],
     queryFn: exclusionsWorkbenchApi.getStats
   });
 
-  const { data: logs, isLoading: logsLoading } = useQuery({
+  const { data: logs, isLoading: logsLoading, error: logsError } = useQuery({
     queryKey: ['exclusions-recent-logs'],
-    queryFn: exclusionsWorkbenchApi.getRecentLogs
+    queryFn: () => exclusionsWorkbenchApi.getIngestionLogs(10) // Get recent 10 logs
   });
 
   if (statsLoading) {
     return (
       <div className="p-6 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (statsError) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <h3 className="text-lg font-semibold text-red-800 mb-2">Error Loading Dashboard</h3>
+          <p className="text-red-600">{statsError instanceof Error ? statsError.message : 'Failed to load dashboard stats'}</p>
+        </div>
       </div>
     );
   }

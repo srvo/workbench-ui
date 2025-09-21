@@ -41,17 +41,36 @@ const ResultRow: React.FC<ResultRowProps> = ({
           <div className="text-sm text-gray-600 truncate">
             {security.name}
           </div>
-          {security.sector && (
-            <div className="text-xs text-gray-500 mt-1">
-              {security.sector}
+          <div className="flex items-center gap-3 mt-1">
+            {security.sector && (
+              <span className="text-xs text-gray-500">
+                {security.sector}
+              </span>
+            )}
+            {security.price && (
+              <span className="text-xs text-gray-600 font-medium">
+                ${security.price.toFixed(2)}
+              </span>
+            )}
+            {security.market_cap && (
+              <span className="text-xs text-gray-500">
+                ${(security.market_cap / 1e9).toFixed(1)}B
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="text-right ml-2">
+          {security.tick_score !== undefined && (
+            <div className="text-lg font-semibold text-purple-600">
+              {security.tick_score}
+            </div>
+          )}
+          {security.last_tick_at && (
+            <div className="text-xs text-gray-400">
+              {formatRelativeTime(security.last_tick_at)}
             </div>
           )}
         </div>
-        {security.last_tick_at && (
-          <div className="text-xs text-gray-400 ml-2">
-            {formatRelativeTime(security.last_tick_at)}
-          </div>
-        )}
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import StrategyTabs from './StrategyTabs';
 
 interface WorkbenchLayoutProps {
@@ -12,16 +13,44 @@ const WorkbenchLayout: React.FC<WorkbenchLayoutProps> = ({
   centerPanel,
   rightPanel
 }) => {
+  const location = useLocation();
+
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       {/* Top Bar */}
       <header className="bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <h1 className="text-xl font-semibold text-brand-purple">Workbench</h1>
+          <Link to="/" className="text-xl font-semibold text-brand-purple hover:text-brand-purple-dark">
+            Workbench
+          </Link>
           <StrategyTabs />
         </div>
-        <div className="text-sm text-gray-500">
-          Investment Research Platform
+        <div className="flex items-center space-x-4">
+          <nav className="flex items-center space-x-3">
+            <Link
+              to="/"
+              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                location.pathname === '/'
+                  ? 'bg-brand-purple text-white'
+                  : 'text-gray-600 hover:text-brand-purple hover:bg-gray-100'
+              }`}
+            >
+              Research
+            </Link>
+            <Link
+              to="/exclusions"
+              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                location.pathname === '/exclusions'
+                  ? 'bg-brand-purple text-white'
+                  : 'text-gray-600 hover:text-brand-purple hover:bg-gray-100'
+              }`}
+            >
+              🚫 Exclusions
+            </Link>
+          </nav>
+          <div className="text-sm text-gray-500">
+            Investment Research Platform
+          </div>
         </div>
       </header>
 

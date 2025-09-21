@@ -149,7 +149,7 @@ describe('MarkdownEditor', () => {
     });
   });
 
-  it('handles keyboard shortcut for save', () => {
+  it('handles keyboard shortcut for save', async () => {
     renderWithProviders(
       <MarkdownEditor
         symbol="AAPL"
@@ -161,10 +161,17 @@ describe('MarkdownEditor', () => {
     const textarea = screen.getByPlaceholderText('Write a note... (Markdown supported)');
     fireEvent.change(textarea, { target: { value: 'Test content' } });
 
-    // Focus the textarea and trigger Ctrl+Enter
+    // Mock the API response
+    vi.mocked(notesApi.create).mockResolvedValue({ id: 1, content: 'Test content' });
+
+    // Focus the textarea first
     textarea.focus();
+
+    // Trigger Ctrl+Enter on window (component listens to window events)
     fireEvent.keyDown(window, { key: 'Enter', ctrlKey: true });
 
-    expect(notesApi.create).toHaveBeenCalledWith('AAPL', 'Test content');
+    await waitFor(() => {
+      expect(notesApi.create).toHaveBeenCalledWith('AAPL', 'Test content');
+    });
   });
 });

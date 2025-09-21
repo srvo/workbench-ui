@@ -20,6 +20,8 @@ const UniversePanel: React.FC<UniversePanelProps> = ({
   const [filter, setFilter] = useState<'all' | 'unseen30' | 'unseen90'>('all');
   const [shuffle, setShuffle] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedSector, setSelectedSector] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'ticker' | 'name' | 'tick_score'>('tick_score');
 
   const debouncedSearch = useDebounce(searchQuery, 300);
 
@@ -34,6 +36,10 @@ const UniversePanel: React.FC<UniversePanelProps> = ({
       params.search = debouncedSearch;
     }
 
+    if (selectedSector !== 'all') {
+      params.sector = selectedSector;
+    }
+
     if (filter === 'unseen30') {
       const date = new Date();
       date.setDate(date.getDate() - 30);
@@ -45,13 +51,13 @@ const UniversePanel: React.FC<UniversePanelProps> = ({
     }
 
     return params;
-  }, [debouncedSearch, filter, shuffle]);
+  }, [debouncedSearch, filter, shuffle, selectedSector]);
 
-  const { data: securities = [], isLoading } = useQuery<Security[]>({
+  const { data: fetchedSecurities = [], isLoading } = useQuery<Security[]>({
     queryKey: ['securities', queryParams],
     queryFn: () => {
       // If no search query and no filter, load top-tick investable securities
-      if (!debouncedSearch && filter === 'all') {
+      if (!debouncedSearch && filter === 'all' && selectedSector === 'all') {
         return securitiesApi.getInvestableTicks().then(ticks =>
           ticks.map((tick: any) => ({
             symbol: tick.symbol,
@@ -59,13 +65,33 @@ const UniversePanel: React.FC<UniversePanelProps> = ({
             sector: tick.sector,
             industry: tick.sector, // Use sector as industry
             is_excluded: false, // All investable securities are not excluded
-            last_tick_at: tick.updated_at?.split('T')[0] // Convert to date format
+            last_tick_at: tick.updated_at?.split('T')[0], // Convert to date format
+            tick_score: tick.tick_score || 0,
+            price: tick.price,
+            market_cap: tick.market_cap
           }))
         );
       }
       return securitiesApi.search(queryParams);
     },
   });
+
+  // Apply client-side sorting
+  const securities = React.useMemo(() => {
+    const sorted = [...fetchedSecurities];
+    switch (sortBy) {
+      case 'ticker':
+        sorted.sort((a, b) => a.symbol.localeCompare(b.symbol));
+        break;
+      case 'name':
+        sorted.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        break;
+      case 'tick_score':
+        sorted.sort((a, b) => (b.tick_score || 0) - (a.tick_score || 0));
+        break;
+    }
+    return sorted;
+  }, [fetchedSecurities, sortBy]);
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -106,10 +132,43 @@ const UniversePanel: React.FC<UniversePanelProps> = ({
     setSelectedIndex(0);
   }, []);
 
+  // Get unique sectors for dropdown
+  const sectors = React.useMemo(() => {
+    const uniqueSectors = new Set<string>();
+    fetchedSecurities.forEach(s => {
+      if (s.sector) uniqueSectors.add(s.sector);
+    });
+    return Array.from(uniqueSectors).sort();
+  }, [fetchedSecurities]);
+
   return (
     <div className="flex flex-col h-full">
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 space-y-3">
         <SearchBar value={searchQuery} onChange={setSearchQuery} />
+
+        <div className="flex gap-2">
+          <select
+            value={selectedSector}
+            onChange={(e) => setSelectedSector(e.target.value)}
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">All Sectors</option>
+            {sectors.map(sector => (
+              <option key={sector} value={sector}>{sector}</option>
+            ))}
+          </select>
+
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="tick_score">Tick Score ↓</option>
+            <option value="ticker">Ticker A-Z</option>
+            <option value="name">Name A-Z</option>
+          </select>
+        </div>
+
         <Filters
           filter={filter}
           onFilterChange={handleFilterChange}
