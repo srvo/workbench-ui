@@ -5,6 +5,7 @@ import { ToastProvider } from './hooks/useToast';
 import { queryClient } from './lib/queryClient';
 import Workbench from './pages/Workbench';
 import Exclusions from './pages/Exclusions';
+import Backtests from './pages/Backtests';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Workbench />} />
             <Route path="/exclusions" element={<Exclusions />} />
+            <Route path="/backtests" element={<Backtests />} />
           </Routes>
         </Router>
       </ToastProvider>

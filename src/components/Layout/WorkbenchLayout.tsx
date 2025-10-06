@@ -3,15 +3,17 @@ import { Link, useLocation } from 'react-router-dom';
 import StrategyTabs from './StrategyTabs';
 
 interface WorkbenchLayoutProps {
-  leftPanel: React.ReactNode;
-  centerPanel: React.ReactNode;
-  rightPanel: React.ReactNode;
+  leftPanel?: React.ReactNode;
+  centerPanel?: React.ReactNode;
+  rightPanel?: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 const WorkbenchLayout: React.FC<WorkbenchLayoutProps> = ({
   leftPanel,
   centerPanel,
-  rightPanel
+  rightPanel,
+  children
 }) => {
   const location = useLocation();
 
@@ -47,6 +49,16 @@ const WorkbenchLayout: React.FC<WorkbenchLayoutProps> = ({
             >
               🚫 Exclusions
             </Link>
+            <Link
+              to="/backtests"
+              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                location.pathname === '/backtests'
+                  ? 'bg-brand-purple text-white'
+                  : 'text-gray-600 hover:text-brand-purple hover:bg-gray-100'
+              }`}
+            >
+              📊 Backtests
+            </Link>
           </nav>
           <div className="text-sm text-gray-500">
             Investment Research Platform
@@ -55,22 +67,28 @@ const WorkbenchLayout: React.FC<WorkbenchLayoutProps> = ({
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Panel - Universe */}
-        <div className="w-80 border-r border-gray-200 bg-white overflow-hidden flex flex-col">
-          {leftPanel}
+      {children ? (
+        <div className="flex-1 overflow-auto bg-gray-50">
+          {children}
         </div>
+      ) : (
+        <div className="flex-1 flex overflow-hidden">
+          {/* Left Panel - Universe */}
+          <div className="w-80 border-r border-gray-200 bg-white overflow-hidden flex flex-col">
+            {leftPanel}
+          </div>
 
-        {/* Center Panel - Charts */}
-        <div className="flex-1 overflow-auto bg-gray-50 p-4">
-          {centerPanel}
-        </div>
+          {/* Center Panel - Charts */}
+          <div className="flex-1 overflow-auto bg-gray-50 p-4">
+            {centerPanel}
+          </div>
 
-        {/* Right Panel - Controls */}
-        <div className="w-96 border-l border-gray-200 bg-white overflow-hidden flex flex-col">
-          {rightPanel}
+          {/* Right Panel - Controls */}
+          <div className="w-96 border-l border-gray-200 bg-white overflow-hidden flex flex-col">
+            {rightPanel}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
