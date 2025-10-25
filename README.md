@@ -1,6 +1,8 @@
-# React + TypeScript + Vite
+# Workbench UI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> **⚠️ DEPRECATED**: This repository is deprecated as of October 25, 2025 and exists only for feature inventory and implementation reference. See [DEPRECATED.md](../DEPRECATED.md) for comprehensive documentation of all systems, features, and lessons learned.
+
+React + TypeScript + Vite application for investment research and securities analysis with ESG/ethical screening capabilities.
 
 Currently, two official plugins are available:
 
